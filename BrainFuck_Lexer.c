@@ -23,8 +23,11 @@
 #define bool int
 #define true 1
 #define false 0
- 
- 
+
+struct map{
+	struct Key
+
+
 bool checkFile(FILE* file){
 	//~ if file is not empty, return true
 	if (file == NULL){
@@ -43,11 +46,16 @@ bool lexer(FILE* input_file, FILE* output_file){
 	const char* tokens[] = {"t_shift_right", "t_shift_left", "t_increment",
 							"t_decrement", "t_output", "t_input", 
 							"t_open_loop", "t_close_loop"};
-	
 	if (checkFile(input_file) == false){
 		return false;
 	}
 	
+	do{
+		c = fgetc(input_file);
+		
+		
+	} while (c != EOF)
+		
 	
 	
 	
