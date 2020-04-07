@@ -140,9 +140,9 @@ char* getValue(struct hash_table* hashTable, char* key){
         return entry->value;
     }
 }
-
-int main(){
 /*
+int main(){
+
     struct hash_table* map = createHashTable(10000);
     insertEntry(map, "k1", "v1");  
     insertEntry(map, "k2", "v2");  
@@ -155,6 +155,7 @@ int main(){
     printf("key: %s, value: %s\n", "k3", getValue(map, "k3"));
     printf("key: %s, value: %s\n", "k4", getValue(map, "k4"));
     printf("key: %s, value: %s\n", "k5", getValue(map, "k5"));
-*/
+
     return 0;
-} 	
+}
+*/	

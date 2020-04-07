@@ -44,11 +44,14 @@ bool lexer(struct hash_table* tokenTable, FILE* input_file, FILE* output_file){
 	if (checkFile(input_file) == false){
 		return false;
 	}
+
     else{
         do{
+            printf("a");
             char c = fgetc(input_file);
+            printf("b");
             const char* out_string = getValue(tokenTable, &c);
-            
+            printf("c");
             if (out_string == NULL){
                 continue;
             }
@@ -62,6 +65,19 @@ bool lexer(struct hash_table* tokenTable, FILE* input_file, FILE* output_file){
 }
 
 int main(int argc, char* argv[]){
+    
+    if (argc > 2){
+        printf("Too many arguments");
+    }
+
+    if (argc < 2){
+        printf("Please specify <input.bf> and <output.bf>");
+    }
+
+    if ((strcmp(argv[0], "--h") == 0) || (strcmp(argv[0], "--help") == 0)){
+        printf("Usage: ./BrainFuck_Lexer <input.bf> <output.bf>");
+    }
+
 
     struct hash_table* tokenTable = createHashTable(8);
     insertEntry(tokenTable, ">", "t_shift_right\n");
