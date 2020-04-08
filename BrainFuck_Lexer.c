@@ -31,135 +31,8 @@
 #define bool int
 #define true 1
 #define false 0
-//#include "hashmap.h"
+#define str_lngth 256
 
-struct map_entry{
-	char* key;
-	char* value;
-	struct map_entry* next;
-};
-
-struct hash_table{
-	int size;   
-	struct map_entry **table;
-};
-
-int createHash(struct hash_table* hashTable, char* key){
-	unsigned long int hash = 0;
-	unsigned long i = 0;
-	
-	while ((hash < ULONG_MAX) && (i < strlen(key))){
-		hash = hash << 8;
-		hash = hash + key[i];
-		i++;
-    }
-
-	hash = hash % hashTable->size;
-	return hash;
-}
-
-struct map_entry* createEntry(char* key, char* value){
-    struct map_entry* newEntry;
-	
-    if ((newEntry = malloc(sizeof(struct map_entry))) == NULL){ 
-        return NULL;
-    }
-    
-    if ((newEntry->key = strdup(key)) == NULL){
-        return NULL;
-    }
-	
-    if ((newEntry->value = strdup(value))==NULL){
-        return NULL;
-    }
-
-    newEntry->next = NULL;
-
-    return newEntry;
-}
-
-
-void insertEntry(struct hash_table* hashTable, char* key, char* value){
-    struct map_entry * next = NULL;
-    struct map_entry * last = NULL;
-    
-    int hash = createHash(hashTable, key);
-    next = hashTable->table[hash];
-
-    while((next != NULL)&&(next->key != NULL)&&(strcmp(key, next->key)>0)){
-        last = next;
-        next = next -> next;
-    }
-
-    if ((next != NULL)&&(next->key != NULL)&&(strcmp(key, next->key)==0)){
-    /*If key-value pair already exists, update to new value*/
-        free(next->value);
-        next->value = strdup(value);
-    }
-
-    else{
-        /*If key-value pair does not exist, create new pair*'*/
-        struct map_entry* newEntry = createEntry(key, value);
-        
-        if (next == hashTable->table[hash]){
-            newEntry->next = next;
-            hashTable->table[hash] = newEntry;
-        }
-        else if (next == NULL){
-            last->next = newEntry;
-        }
-        else{
-            newEntry->next = next;
-            last->next = newEntry;
-        }
-
-    }
-}
-
-struct hash_table* createHashTable(int size){
-	
-	struct hash_table* hashTable = NULL;
-	
-	if (size < 1){
-		return NULL;
-	}
-	
-	if ((hashTable = malloc(sizeof(struct hash_table))) == NULL){
-		return NULL;
-	}
-	
-	if ((hashTable->table = malloc(sizeof(struct map_entry*)*size)) == NULL){
-		return NULL;
-	}
-	
-	for (int i = 0; i < size; i++){
-		hashTable->table[i] = NULL;
-	}
-
-	hashTable->size = size;
-	
-	return hashTable;
-}
-
-char* getValue(struct hash_table* hashTable, char* key){
-    unsigned long hash = createHash(hashTable, key);
-    struct map_entry* entry = hashTable->table[hash];
-
-    while ((entry == NULL)||(entry->key == NULL)||(strcmp(key,entry->key)>0)){
-        //step through looking for the entry
-        entry = entry->next;
-    }
-    
-
-
-    if ((entry == NULL)||(entry->key == NULL)||(strcmp(key, entry->key)!=0)){
-        return NULL;
-    }
-
-    else{
-        return entry->value;
-    }
-}
 bool checkFile(FILE* file){
 	//~ if file is not empty, return true
 	if (file == NULL){
@@ -173,12 +46,9 @@ bool checkFile(FILE* file){
 //~ void displayStatus();
 //~ what possible errors are there? 1. empty file, 2. format? We can't really look at syntax in the lexer
 
-void lexer(struct hash_table* tokenTable, FILE* input_file, FILE* output_file){
-
-    printf("itried");
+void lexer(const char symbols[][str_lngth], const char tokens[][str_lngth], FILE* input_file, FILE* output_file){
 
     char c = 75;
-
 
     if (checkFile(input_file) == false){
 	    printf("bad input file\n");
@@ -189,33 +59,41 @@ void lexer(struct hash_table* tokenTable, FILE* input_file, FILE* output_file){
     else{
         while (c != EOF){
             c = fgetc(input_file);
-            printf("%s", &c);
+            if (c == *symbols[0]){
+                fputs(tokens[0], output_file);
+            }
+            else if (c == *symbols[1]){
+                fputs(tokens[1], output_file);
+            }
+            else if (c == *symbols[2]){
+                fputs(tokens[2], output_file);
+            }
+            else if (c == *symbols[3]){
+                fputs(tokens[3], output_file);
+            }
+            else if (c == *symbols[4]){
+                fputs(tokens[4], output_file);
+            }
+            else if (c == *symbols[5]){
+                fputs(tokens[5], output_file);
+            }
+            else if (c == *symbols[6]){
+                fputs(tokens[6], output_file);
+            }
+            else if (c == *symbols[7]){
+                fputs(tokens[7], output_file);
+            }
         }
     }
-/*    
-    else{
-        printf("aaa");
-        do{
-            printf("a");
-            c = fgetc(input_file);
-            printf("b");
-            char* out_string = getValue(tokenTable, &c);
-            printf("c");
-            if (out_string == NULL){
-                continue;
-            }
-            
-            else{
-                fputs(out_string, output_file);
-            }
-       } while (c != EOF);
-        return;
-    }
-*/
 }
 
 
 int main(int argc, char* argv[]){
+
+    const char symbols[][str_lngth] = {">", "<", "+", "-", ".", ",", "[", "]"};
+    const char tokens[][str_lngth] = {"t_shift_right\n", "t_shift_left\n", "t_increment\n", "t_decrement\n",
+                                        "t_output\n", "t_input\n", "t_open_loop\n", "t_close_loop\n"};
+
     if (argc > 3){
         printf("Too many arguments\n");
     }
@@ -230,28 +108,11 @@ int main(int argc, char* argv[]){
         }
     } 
     
-    struct hash_table* tokenTable = createHashTable(9);
-    
-    insertEntry(tokenTable, ">", "t_shift_right\n");
-    insertEntry(tokenTable, "<", "t_shift_left\n");
-    insertEntry(tokenTable, "+", "t_increment\n");
-    insertEntry(tokenTable, "-", "t_decrement\n");
-    insertEntry(tokenTable, ".", "t_output\n");
-    insertEntry(tokenTable, ",", "t_input\n");
-    insertEntry(tokenTable, "[", "t_open_loop\n");
-    insertEntry(tokenTable, "]", "t_close_loop\n");
-   
     FILE* input_file = fopen(argv[1], "r");
     FILE* output_file = fopen(argv[2], "w");
 
-    //char* input_file = argv[1];
-    //char* output_file = argv[2];
-    
+	lexer(symbols, tokens, input_file, output_file);
 
-	lexer(tokenTable, input_file, output_file);
-    
-    printf("postlexer\n");
-    
     /*	
     if (status == false){
 		printf("Error: Empty Input");
