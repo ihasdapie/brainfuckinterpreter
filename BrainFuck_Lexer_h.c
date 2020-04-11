@@ -5,8 +5,7 @@
  * input: untokenized brainfuck
  * output: tokenized brainfuck
  * 
- * TODO lexer output to char[][] instead of to file
- * currently not needed for the interpreter
+ * 
  * token format:
  * 
  * >	t_shift_right
@@ -52,8 +51,14 @@ char [][str_lngth] lexer(FILE* input_file){
 
     const char symbols[][str_lngth] = {">", "<", "+", "-", ".", ",", "[", "]"};
     char c = 75;
-	int index = 0;
 
+    if (checkFile(input_file) == false){
+	    printf("bad input file\n");
+        return;
+	}
+	
+	
+	
     else{
         while (c != EOF){
             c = fgetc(input_file);
