@@ -1,4 +1,10 @@
 
+
+
+#include <stdbool.h>
+
+
+
 bool shift_right(struct interpreterStruct* interpreter, int tape[]);
 bool shift_left(struct interpreterStruct* interpreter, int tape[]);
 bool increment(struct interpreterStruct* interpreter, int tape[]);

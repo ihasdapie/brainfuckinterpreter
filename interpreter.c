@@ -32,26 +32,26 @@ struct interpreterStruct{
     struct nodeStack* loopStack;
 };
 
-bool shift_right(struct interpreterStruct* interpreter, int tape[]){
+void shift_right(struct interpreterStruct* interpreter, int tape[]){
     if (interpreter->dp == TAPE_SIZE-1){
-        return false;
+        exit(1);
     }
     else{
         interpreter->ip++;
         interpreter->dp++;
-        return true;
+        return;
     }
 
 }
 
-bool shift_left(struct interpreterStruct* interpreter, int tape[]){
+void shift_left(struct interpreterStruct* interpreter, int tape[]){
     if (interpreter->dp == 0){
-        return false;
+        exit(1);
     }
     else{
         interpreter->ip++;
         interpreter->dp--;
-        return true;
+        return;
     }
 }
 
@@ -65,13 +65,23 @@ void decrement(struct interpreterStruct* interpreter, int tape[]){
     return;
 }
 
-bool take_input(struct interpreterStruct* interpreter, int tape[]);
+void take_input(struct interpreterStruct* interpreter, int tape[]){
+    char line[256];
+    if (fgets(line, sizeof line, stdin) == NULL){
+        printf("Input Error!\n");
+        exit(1);
+    }
+    else{
+        tape[interpreter->dp] = line[0];
+        interpreter->ip++;
+    }
+    
+}
+void output(struct interpreterStruct* interpreter, int tape[]);
 
-bool output(struct interpreterStruct* interpreter, int tape[]);
+void jump_back(struct interpreterStruct* interpreter);
 
-bool jump_back(struct interpreterStruct* interpreter);
-
-bool set_loop(struct interpreterStruct* interpreter);
+void set_loop(struct interpreterStruct* interpreter);
 
 void disp_tape(int tape[], int tape_size){
     if (tape_size < 10){
@@ -90,6 +100,9 @@ void disp_tape(int tape[], int tape_size){
 void t_runInterpreter(struct interpreterStruct* interptr, int tape[], FILE* input_file){
     int tape_size = 0;
 
+    //load input_file into array: but I want dynamic sizing...
+    //
+    //
     char c = fgetc(input_file);
     bool status = true;
     while (c != EOF){   
@@ -130,11 +143,6 @@ void t_runInterpreter(struct interpreterStruct* interptr, int tape[], FILE* inpu
         }
         disp_tape(tape, tape_size);
         c = fgetc(input_file);
-        if (status == false){
-            printf("ERROR: Out Of Tape\n");
-            break;
-        }
-    }
     return;
 }
 
@@ -190,16 +198,17 @@ int main(int argc, char* argv[]){
     char runMode = '-'; //'f': write to file, 't': output to terminal
     if (argc > 3){
         printf("Too many arguments!\n");
-        return 0;
+        exit(1);
     }
     else if (argc < 2){
         printf("Please specify <input.bf>\nRefer to --help for details\n");
-        return 0;
+        exit(1);
     }
     else if (argc == 2){ 
         if ((strcmp(argv[1], "--h") == 0) || (strcmp(argv[1], "--help") == 0)){
             printf("Usage:\nOutput to terminal: ./interpreter <input.bf>\nOutput to file: ./interpreter <input.bf> <output>\n");
-        }
+            exit(1);
+        }   
         else{
             runMode = 't';
         }
