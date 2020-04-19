@@ -21,7 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "Stack_h.h"
+#include "vec.h"
 #include "stdbool.h"
+
 
 #define TAPE_SIZE 30000
 
@@ -32,7 +34,7 @@ struct interpreterStruct{
     struct nodeStack* loopStack;
 };
 
-void shift_right(struct interpreterStruct* interpreter, int tape[]){
+void shift_right(struct interpreterStruct* interpreter){
     if (interpreter->dp == TAPE_SIZE-1){
         exit(1);
     }
@@ -44,7 +46,7 @@ void shift_right(struct interpreterStruct* interpreter, int tape[]){
 
 }
 
-void shift_left(struct interpreterStruct* interpreter, int tape[]){
+void shift_left(struct interpreterStruct* interpreter){
     if (interpreter->dp == 0){
         exit(1);
     }
@@ -77,8 +79,10 @@ void take_input(struct interpreterStruct* interpreter, int tape[]){
     }
     
 }
-void output(struct interpreterStruct* interpreter, int tape[]);
-
+void output(struct interpreterStruct* interpreter, int tape[]){
+    printf("%c", tape[interpreter->dp]);
+    interpreter->ip++;
+}
 void jump_back(struct interpreterStruct* interpreter);
 
 void set_loop(struct interpreterStruct* interpreter);
@@ -96,106 +100,55 @@ void disp_tape(int tape[], int tape_size){
     printf("\n");
 }
 
-
-void t_runInterpreter(struct interpreterStruct* interptr, int tape[], FILE* input_file){
-    int tape_size = 0;
-
-    //load input_file into array: but I want dynamic sizing...
-    //
-    //
+char* getCommands(FILE* input_file){
+    char* commands = vector_create(); 
     char c = fgetc(input_file);
-    bool status = true;
-    while (c != EOF){   
-        if (c == '>'){
-            status = shift_right(interptr, tape);
+    while (c!= EOF){
+        switch(c){
+            case '>':
+                vector_add(&commands, '>');
+                break;
+            case '<':
+                vector_add(&commands, '<');
+                break;
+            case '+':
+                vector_add(&commands, '+');
+                break;
+            case '-':
+                vector_add(&commands, '-');
+                break;
+            case '.':
+                vector_add(&commands, '.');
+                break;
+            case ',':
+                vector_add(&commands, ',');
+                break;
+            case '[':
+                vector_add(&commands, '[');
+                break;
+            case ']':
+                vector_add(&commands, ']');
+                break;
         }
-        
-        else if (c == '<'){
-            status = shift_left(interptr, tape);
-        }
-
-        else if (c == '+'){
-            increment(interptr, tape);
-        }
-
-        else if (c == '-'){
-            decrement(interptr, tape);
-        }
-
-        else if (c == '.'){
-            status = output(interptr, tape);
-        }
-
-        else if (c == ','){
-            status = take_input(interptr, tape);
-        }
-
-        else if (c == '['){
-            status = set_loop(interptr);
-        }
-
-        else if (c == ']'){
-            status = jump_back(interptr);
-        }
-
-        if ((interptr->dp)>tape_size){
-            tape_size = interptr->dp;
-        }
-        disp_tape(tape, tape_size);
-        c = fgetc(input_file);
-    return;
-}
-
-void f_runInterpreter(struct interpreterStruct* interptr, int tape[], FILE* input_file, FILE* output_file){
-    int tape_size = 0;
-
-    char c = fgetc(input_file);
-    
-    while (c != EOF){   
-        if (c == '>'){
-            shift_right(interptr, tape);
-        }
-        
-        else if (c == '<'){
-            shift_left(interptr, tape);
-        }
-
-        else if (c == '+'){
-            increment(interptr, tape);
-        }
-
-        else if (c == '-'){
-            decrement(interptr, tape);
-        }
-
-        else if (c == '.'){
-            output(interptr, tape);
-        }
-
-        else if (c == ','){
-            take_input(interptr, tape);
-        }
-
-        else if (c == '['){
-            set_loop(interptr);
-        }
-
-        else if (c == ']'){
-            jump_back(interptr);
-        }
-
-        if ((interptr->dp)>tape_size){
-            tape_size = interptr->dp;
-        }
-        disp_tape(tape, tape_size);
-        c = fgetc(input_file);
     }
+    return commands;
 }
+
+void t_runInterpreter(char* commands, int tape[]){
+    struct interpreterStruct interpreter;
+    interpreter.ip = 0;
+    interpreter.dp = 0;
+    interpreter.loopStack = NULL;
+
+
+}
+
+
 
 
 int main(int argc, char* argv[]){
 
-    char runMode = '-'; //'f': write to file, 't': output to terminal
+    char runMode; //'f': write to file, 't': output to terminal
     if (argc > 3){
         printf("Too many arguments!\n");
         exit(1);
@@ -220,25 +173,11 @@ int main(int argc, char* argv[]){
 
 //variables
     int tape[TAPE_SIZE] = {0}; //"standard tape size is 30,000 ints"
-    struct interpreterStruct interpreter;
-    interpreter.ip = 0;
-    interpreter.dp = 0;
-    interpreter.loopStack = NULL;
-//main
-/*
-    if (runMode == 'f'){
+       if (runMode == 't'){
         FILE* input_file = fopen(argv[1], "r");
-        FILE* output_file = fopen(argv[2], "w");
-        f_runInterpreter(&interpreter, tape, input_file, output_file);
-    }
-*/
-    if (runMode == 't'){
-        FILE* input_file = fopen(argv[1], "r");
-        t_runInterpreter(&interpreter, tape, input_file);
+        char* commands = getCommands(input_file);
+        t_runInterpreter(tape, commands);
     }
 
     return 0;
 }
-
-
-
