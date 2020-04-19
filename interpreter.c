@@ -87,29 +87,34 @@ void output(struct interpreterStruct* interpreter, int tape[]){
     printf("%c", tape[interpreter->dp]);
     interpreter->ip++;
 }
+
 void jump_back(struct interpreterStruct* interpreter, int tape[]){
+    //]
+    interpreter->cjb = interpreter->ip;
     if (tape[interpreter->dp] == 0){
         interpreter->ip++;
+        stack_Pop(&interpreter->loopStack);
     }
     else{
-        interpreter->ip
+        interpreter->ip = stack_GetTop((interpreter->loopStack))+1;
     }
 }
 
 void set_loop(struct interpreterStruct* interpreter, int tape[]){
     //[
-    if (tape[interpreter->dp]==0){
-        //if *dp == 0, 
-        interpreter->ip = interpreter->cjb;
+    if (tape[interpreter->dp]==0){ 
+        //if *dp=0, jmp to matching command after ] 
+        interpreter->ip = ((interpreter->cjb) + 1);
     }
     else{
-        if (interpreter->cjb == -1){
-            printf("Unexpected ] found in instruction %d", interpreter->ip);
-            exit(1);
-        }
-        else{
-
+        stack_Push(&interpreter->loopStack, interpreter->ip);
+        interpreter->ip++;
+    }
 }
+
+
+
+
 void disp_tape(int tape[], int tape_size){
     if (tape_size < 10){
         tape_size = 10;
