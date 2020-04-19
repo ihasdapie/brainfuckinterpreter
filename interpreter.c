@@ -33,6 +33,7 @@ struct interpreterStruct{
     int dp; //data pointer
     struct nodeStack* loopStack; //store [ locations
     int cjb; //current ] ip to jmp to 
+    char output[256]; //this may be changed. format: [size][data][data][data]... 
 };
 
 void shift_right(struct interpreterStruct* interpreter){
@@ -41,8 +42,8 @@ void shift_right(struct interpreterStruct* interpreter){
         exit(1);
     }
     else{
-        interpreter->ip++;
-        interpreter->dp++;
+        ++interpreter->ip;
+        ++interpreter->dp;
         return;
     }
 
@@ -56,18 +57,21 @@ void shift_left(struct interpreterStruct* interpreter){
     else{
         interpreter->ip++;
         interpreter->dp--;
+        printf("nodte%d", interpreter->ip);
         return;
     }
 }
 
 void increment(struct interpreterStruct* interpreter, int tape[]){
     tape[interpreter->dp]++;
+    interpreter->ip++;
     return;
 }
 
 void decrement(struct interpreterStruct* interpreter, int tape[]){
     tape[interpreter->dp]--;
     //There is chance of int overflow...but no point catching that
+    interpreter->ip++;
     return;
 }
 
@@ -86,6 +90,8 @@ void take_input(struct interpreterStruct* interpreter, int tape[]){
 void output(struct interpreterStruct* interpreter, int tape[]){
     printf("%c", tape[interpreter->dp]);
     interpreter->ip++;
+    (interpreter->output)[0]++;
+    interpreter->output[(int)interpreter->output[0]] = tape[interpreter->dp];
 }
 
 void jump_back(struct interpreterStruct* interpreter, int tape[]){
@@ -115,52 +121,58 @@ void set_loop(struct interpreterStruct* interpreter, int tape[]){
 
 
 
-void disp_tape(int tape[], int tape_size){
-    if (tape_size < 10){
-        tape_size = 10;
+void disp_tape(int tape[], int* tape_size, char commands[], struct interpreterStruct interpreter){
+    if (*tape_size < 10){
+        *tape_size = 10;
     }
     else{
-        tape_size = tape_size + 1;
+        if (interpreter.dp > *tape_size){
+            *tape_size = interpreter.dp;
+        }
     }
-    for (int i = 0; i < tape_size; i++){
+    
+    printf("--------Interpreter--------\nDataPointer: %d\nInstructionPointer: %d\nCurrent Instruction: %c\n--------Interpreter-------\n\nOutput: %s\n", 
+            interpreter.dp, interpreter.ip, commands[interpreter.ip], (interpreter.output+1)); //increment output to not print first value
+    for (int i = 0; i < *tape_size; i++){
         printf("|%d", tape[i]);
     } 
     printf("|\n");
 }
 
-char* getCommands(FILE* input_file){
-    char* commands = vector_create(); 
+void getCommands(char* commands[], FILE* input_file){ 
+    printf("ran getCommands\n");
     char c = fgetc(input_file);
     while (c!= EOF){
         switch(c){
             case '>':
-                vector_add(&commands, '>');
+                vector_add(commands, '>');
                 break;
             case '<':
-                vector_add(&commands, '<');
+                vector_add(commands, '<');
                 break;
             case '+':
-                vector_add(&commands, '+');
+                vector_add(commands, '+');
                 break;
             case '-':
-                vector_add(&commands, '-');
+                vector_add(commands, '-');
                 break;
             case '.':
-                vector_add(&commands, '.');
+                vector_add(commands, '.');
                 break;
             case ',':
-                vector_add(&commands, ',');
+                vector_add(commands, ',');
                 break;
             case '[':
-                vector_add(&commands, '[');
+                vector_add(commands, '[');
                 break;
             case ']':
-                vector_add(&commands, ']');
+                vector_add(commands, ']');
                 break;
         }
+        c = fgetc(input_file);
     }
-    vector_add(&commands, 'q');
-    return commands;
+    vector_add(commands, 'q');
+    return;
 }
 
 void runInterpreter(char* commands, int tape[]){
@@ -169,12 +181,13 @@ void runInterpreter(char* commands, int tape[]){
     interpreter.dp = 0;
     interpreter.loopStack = NULL;
     interpreter.cjb = -1;
+    int tape_size = 0;
 
     while(commands[interpreter.ip] != 'q'){
-        disp_tape(tape, TAPE_SIZE);
+        disp_tape(tape, &tape_size, commands, interpreter);
         switch(commands[interpreter.ip]){
             case '>':
-                shift_right(&interpreter);
+                shift_right(&interpreter); 
                 break;
             case '<':
                 shift_left(&interpreter);
@@ -195,17 +208,18 @@ void runInterpreter(char* commands, int tape[]){
                 set_loop(&interpreter, tape);
                 break;
             case ']':
-                jump_back(&interpreter, tape);
+                jump_back(&interpreter, tape); 
                 break;
+    
         }
     }
     return;
+
 }
 
 
 int main(int argc, char* argv[]){
-
-    char runMode; //'f': with file, 'l':live, 'x', error/exit
+    char runMode = -1; //'f': with file, 'l':live, 'x', error/exit
     if (argc > 2){
         printf("Too many arguments!\n");
         runMode='x';
@@ -226,21 +240,31 @@ int main(int argc, char* argv[]){
 
 
     if (runMode == 'x'){
+        printf("EXIT DUE TO RUNMODE x");
         exit(1);
     }
-    else if (runMode == 'f'){
-        int tape[TAPE_SIZE] = {0}; //"standard tape size is 30,000 ints"
-        FILE* input_file = fopen(argv[1], "r");
-        char* commands = getCommands(input_file);
-        runInterpreter(commands, tape);
-    }
-    else if (runMode == 'l'){
-        printf("implement pls");
-    }
 
-    else{
-        exit(1); //unknown option/error
-    }
-    
+    else if (runMode == 'f'){
+        printf("aaa");
+        int tape[TAPE_SIZE] = {0};
+        printf("bbb");
+        FILE* input_file=fopen(argv[1], "r");
+        printf("ccc");
+        char* commands = vector_create();
+        getCommands(&commands, input_file);
+        runInterpreter(commands, tape);
+        vector_free(commands);
+
+            /*     } */
+/*     else if (runMode == 'l'){ */
+/*         printf("implement pls\n"); */
+/*     } */
+
+/*     else{ */
+/*         printf("EXIT DUE TO UNKNOWN ERROR"); */
+/*         exit(1); //unknown option/error */
+/*     } */
+
     return 0;
+    }
 }
