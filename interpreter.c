@@ -31,7 +31,8 @@
 struct interpreterStruct{
     int ip; //instruction pointer
     int dp; //data pointer
-    struct nodeStack* loopStack;
+    struct nodeStack* loopStack; //store [ locations
+    int cjb; //current ] ip to jmp to 
 };
 
 void shift_right(struct interpreterStruct* interpreter){
@@ -86,19 +87,27 @@ void output(struct interpreterStruct* interpreter, int tape[]){
     printf("%c", tape[interpreter->dp]);
     interpreter->ip++;
 }
-void jump_back(struct interpreterStruct* interpreter, int tape[]);
-    if (tape[interpreter->dp])
-
-
+void jump_back(struct interpreterStruct* interpreter, int tape[]){
+    if (tape[interpreter->dp] == 0){
+        interpreter->ip++;
+    }
+    else{
+        interpreter->ip
+    }
+}
 
 void set_loop(struct interpreterStruct* interpreter, int tape[]){
     //[
     if (tape[interpreter->dp]==0){
-        interpreter->ip = pop_Stack(&(interpreter->loopStack));
+        //if *dp == 0, 
+        interpreter->ip = interpreter->cjb;
     }
     else{
-        if interpreter
-    }push_Stack(&(interpreter->loopStack), 
+        if (interpreter->cjb == -1){
+            printf("Unexpected ] found in instruction %d", interpreter->ip);
+            exit(1);
+        }
+        else{
 
 }
 void disp_tape(int tape[], int tape_size){
@@ -154,6 +163,8 @@ void runInterpreter(char* commands, int tape[]){
     interpreter.ip = 0;
     interpreter.dp = 0;
     interpreter.loopStack = NULL;
+    interpreter.cjb = -1;
+
     while(commands[interpreter.ip] != 'q'){
         disp_tape(tape, TAPE_SIZE);
         switch(commands[interpreter.ip]){

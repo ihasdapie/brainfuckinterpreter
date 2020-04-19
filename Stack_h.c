@@ -17,21 +17,32 @@ struct nodeStack{
 
 struct nodeStack* new_nodeStack(int val);
 
-void push_Stack(struct nodeStack** rootptrptr, int val);
+void stack_Push(struct nodeStack** rootptrptr, int val);
 
-int pop_Stack(struct nodeStack** rootptrptr);
+int stack_Pop(struct nodeStack** rootptrptr);
 //return value is set to -1 in case of empty stack: for use with positive integers only
-void free_Stack(struct nodeStack** rootptr);
+void stack_Free(struct nodeStack** rootptr);
 
-void disp_Stack(struct nodeStack* rootptr, int count);
+void stack_Disp(struct nodeStack* rootptr, int count);
 
-struct nodeStack* new_nodeStack(int val);
+int stack_GetTop(struct nodeStack* rootptr){
+    if (rootptr == NULL){
+        return -1;
+    }
+    else{
+        return rootptr->val;
+    }
+}
+
+
+
+
 
 struct nodeStack* new_nodeStack(int val){
     struct nodeStack* newNode = (struct nodeStack*)malloc(sizeof(struct nodeStack*));
     if (newNode == 0){
         printf("-----------------------------ERROR: OUT OF MEMORY-------------------------\n");
-        return NULL;
+        exit(1);
     }
     else{
         newNode->val = val;
@@ -40,7 +51,7 @@ struct nodeStack* new_nodeStack(int val){
     }
 }
 
-void push_Stack(struct nodeStack** rootptrptr, int val){
+void stack_Push(struct nodeStack** rootptrptr, int val){
     if (*rootptrptr == NULL){
         *rootptrptr = new_nodeStack(val);
         return;
@@ -52,7 +63,7 @@ void push_Stack(struct nodeStack** rootptrptr, int val){
         return;
     }
 }
-int pop_Stack(struct nodeStack** rootptrptr){
+int stack_Pop(struct nodeStack** rootptrptr){
     if (*rootptrptr == NULL){
         return -1;
     }
@@ -65,25 +76,25 @@ int pop_Stack(struct nodeStack** rootptrptr){
         return retval;
     }
 }
-void free_Stack(struct nodeStack** rootptrptr){
+void stack_Free(struct nodeStack** rootptrptr){
     if ((*rootptrptr) == NULL){
         free((*rootptrptr));
     }
     else{
-        free_Stack(&(*rootptrptr)->next);
+        stack_Free(&(*rootptrptr)->next);
         free((*rootptrptr));
         (*rootptrptr) = NULL;
         return;
     }
 }
-void disp_Stack(struct nodeStack* rootptr, int count){
+void stack_Disp(struct nodeStack* rootptr, int count){
     if (rootptr == NULL){
         //printf("-------------------------No Values Left!-------------------------\n");
         return;
     }
     else{
         printf("Value #%d: %d\n",count, rootptr->val);
-        disp_Stack(rootptr->next, ++count);
+        stack_Disp(rootptr->next, ++count);
         return;
     }
 }
