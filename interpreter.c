@@ -2,15 +2,15 @@
  *
  * Brian Chen | 2020
  *
- * A interpreter struct & accompanying functions to operate on a tape
+ * A interpreter struct & accompanying functions interpret brainfuck on a tape
  * represented as an int array.
  * 
  * Usage:
+ *
+ * 1. file input: ./interpreter.c <input.bf>
+ * 2. live, "pythonic", interpreter: ./interpreter 
  * 
- * 1. output to file: ./interpreter.c <input.bf> <output.bf>
- * 2. output to command line <input.bf>
- * 
- * ToDo: live visualizer-style interpreter
+ * Compilation: gcc interpreter.c Stack_h.c Stack_h.h vec.c vec.h -o -ggdb(optional) <interpreter>
  *
  */
 
@@ -24,8 +24,9 @@
 #include "vec.h"
 #include "stdbool.h"
 
-
 #define TAPE_SIZE 30000
+#define CYAN_OUT "\x1B[36m"
+#define RESET_OUT "\x1B[0m"
 
 
 struct interpreterStruct{
@@ -81,8 +82,8 @@ void decrement(struct interpreterStruct* interpreter, int tape[]){
 
 void take_input(struct interpreterStruct* interpreter, int tape[]){
     char line[256];
-    char* status = fgets(line, sizeof(line), stdin);
     printf("Input one char: ");
+    char* status = fgets(line, sizeof(line), stdin);
     if (status == NULL){
         printf("Input Error!\n");
         exit(1);
@@ -114,13 +115,18 @@ void jump_back(struct interpreterStruct* interpreter, int tape[]){
     }
 }
 
-void set_loop(struct interpreterStruct* interpreter, int tape[]){
+void set_loop(struct interpreterStruct* interpreter, int tape[], char* commands){
     //[
     if (tape[interpreter->dp]==0){ 
         //if *dp=0, jmp to matching command after ] 
         if (interpreter->cjb == -1){
-            printf("CANNOT [ WITHOUT MATCHING ] TO JUMP TO");
-            exit(1);     
+            int ind = 0;
+            for (int i = interpreter->ip; i<(int)vector_size(commands); i++){
+                if (commands[i] == ']'){
+                    ind=i;
+                }
+            }
+            interpreter->ip=(ind+1);
         }
         else{
         }interpreter->ip = ((interpreter->cjb) + 1);
@@ -132,26 +138,30 @@ void set_loop(struct interpreterStruct* interpreter, int tape[]){
 }
 
 void disp_tape(int tape[], int* tape_size, char commands[], struct interpreterStruct interpreter){
+    clearScreen();
     if (*tape_size < 10){
         *tape_size = 10;
     }
     else{
-        if (interpreter.dp > *tape_size){
+        if (interpreter.dp >= *tape_size){
             *tape_size = interpreter.dp;
         }
     }
-
-    clearScreen();
     printf("-----------Tape------------\n");
-    for (int i = 0; i < *tape_size; i++){
-        printf("|%d", tape[i]);
+    for (int i = 0; i < *tape_size+1; i++){
+        if (i == interpreter.dp){
+            printf("|%s%d%s",CYAN_OUT, tape[i], RESET_OUT);
+        }
+        else{
+            printf("|%d", tape[i]);
+            
+        }
     }
     printf("|\n-----------Tape------------\n");
 
-
     printf("--------Interpreter--------\nData Pointer: %d | Instruction Pointer: %d\nAll Commands: %s\nCurrent Instruction: %c\nOutput: %s\n--------Interpreter--------\n",
-            interpreter.dp, interpreter.ip, commands, commands[interpreter.ip], (interpreter.output+1)); //increment output to not print first value
-    
+            interpreter.dp, interpreter.ip, commands, commands[interpreter.ip],
+            (interpreter.output+1)); //increment output to not print first value 
 }
 
 void f_getCommands(char* commands[], FILE* input_file){ 
@@ -292,14 +302,13 @@ void l_runInterpreter(char* commands, int tape[], int* tape_size, struct interpr
                 jump_back(interpreter, tape); 
                 break;
             case 'q':
+                vector_free(commands);
                 exit(0);
                 break;
         }
         disp_tape(tape, tape_size, commands, *interpreter);
     }
 }
-
-
 
 
 int main(int argc, char* argv[]){
@@ -337,6 +346,7 @@ int main(int argc, char* argv[]){
     }
 
     else if (runMode == 'l'){
+        printf("Input 'q' to quit\n");
         char input[256];
         int tape[TAPE_SIZE] = {0};
         struct interpreterStruct interpreter;
