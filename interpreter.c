@@ -263,7 +263,7 @@ void f_runInterpreter(char* commands, int tape[]){
                 take_input(&interpreter, tape);
                 break;
             case '[':
-                set_loop(&interpreter, tape);
+                set_loop(&interpreter, tape, commands);
                 break;
             case ']':
                 jump_back(&interpreter, tape); 
@@ -296,7 +296,7 @@ void l_runInterpreter(char* commands, int tape[], int* tape_size, struct interpr
                 take_input(interpreter, tape);
                 break;
             case '[':
-                set_loop(interpreter, tape);
+                set_loop(interpreter, tape, commands);
                 break;
             case ']':
                 jump_back(interpreter, tape); 
