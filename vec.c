@@ -58,8 +58,7 @@ vector_data* vector_get_data(vector vec) {
 vector vector_create(void) {
 	vector_data* v = malloc(sizeof(vector_data));
 	v->alloc = 0;
-	v->length = 0;
-	
+	v->length = 0;	
 	return &v->buff;
 }
 

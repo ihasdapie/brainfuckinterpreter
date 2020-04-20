@@ -36,6 +36,11 @@ struct interpreterStruct{
     char output[256]; //this may be changed. format: [size][data][data][data]... 
 };
 
+void clearScreen(){
+    printf("\e[1;1H\e[2J");
+}
+
+
 void shift_right(struct interpreterStruct* interpreter){
     if (interpreter->dp == TAPE_SIZE-1){
         printf("TAPE OUT OF BOUNDS ERROR\n");
@@ -76,7 +81,9 @@ void decrement(struct interpreterStruct* interpreter, int tape[]){
 
 void take_input(struct interpreterStruct* interpreter, int tape[]){
     char line[256];
-    if (fgets(line, sizeof line, stdin) == NULL){
+    char* status = fgets(line, sizeof(line), stdin);
+    printf("Input one char: ");
+    if (status == NULL){
         printf("Input Error!\n");
         exit(1);
     }
@@ -86,11 +93,13 @@ void take_input(struct interpreterStruct* interpreter, int tape[]){
     }
     
 }
+
 void output(struct interpreterStruct* interpreter, int tape[]){
     printf("%c", tape[interpreter->dp]);
     interpreter->ip++;
     (interpreter->output)[0]++;
     interpreter->output[(int)interpreter->output[0]] = tape[interpreter->dp];
+
 }
 
 void jump_back(struct interpreterStruct* interpreter, int tape[]){
@@ -131,14 +140,18 @@ void disp_tape(int tape[], int* tape_size, char commands[], struct interpreterSt
             *tape_size = interpreter.dp;
         }
     }
-    printf("--------Interpreter--------\nDataPointer: %d\nInstructionPointer: %d\nCurrent Instruction: %c\n--------Interpreter-------\nOutput: %s\n", 
-            interpreter.dp, interpreter.ip, commands[interpreter.ip], (interpreter.output+1)); //increment output to not print first value
-    
-    printf("Tape: \n");
+
+    clearScreen();
+    printf("-----------Tape------------\n");
     for (int i = 0; i < *tape_size; i++){
         printf("|%d", tape[i]);
-    } 
-    printf("|\n\n\n\n\n\n\n");
+    }
+    printf("|\n-----------Tape------------\n");
+
+
+    printf("--------Interpreter--------\nData Pointer: %d | Instruction Pointer: %d\nAll Commands: %s\nCurrent Instruction: %c\nOutput: %s\n--------Interpreter--------\n",
+            interpreter.dp, interpreter.ip, commands, commands[interpreter.ip], (interpreter.output+1)); //increment output to not print first value
+    
 }
 
 void f_getCommands(char* commands[], FILE* input_file){ 
@@ -177,7 +190,6 @@ void f_getCommands(char* commands[], FILE* input_file){
 }
 
 void in_getCommands(char* commands[], char* input){ 
-    
     for (int i = 0; i < (int)strlen(input); i++){ 
         switch(input[i]){
             case '>':
@@ -204,15 +216,13 @@ void in_getCommands(char* commands[], char* input){
             case ']':
                 vector_add(commands, ']');
                 break;
+            case 'q':
+                vector_add(commands, 'q');
+                return;
         }
     }
     return;
 }
-
-
-
-
-
 
 void f_runInterpreter(char* commands, int tape[]){
     struct interpreterStruct interpreter;
@@ -249,11 +259,10 @@ void f_runInterpreter(char* commands, int tape[]){
                 jump_back(&interpreter, tape); 
                 break;
                 
-            }
+        }
         disp_tape(tape, &tape_size, commands, interpreter);
     }
 }
-
 
 void l_runInterpreter(char* commands, int tape[], int* tape_size, struct interpreterStruct* interpreter){
     for (int i = 0; i < (int) vector_size(commands); i++){
@@ -282,10 +291,14 @@ void l_runInterpreter(char* commands, int tape[], int* tape_size, struct interpr
             case ']':
                 jump_back(interpreter, tape); 
                 break;
-            }
+            case 'q':
+                exit(0);
+                break;
+        }
         disp_tape(tape, tape_size, commands, *interpreter);
     }
 }
+
 
 
 
@@ -308,7 +321,6 @@ int main(int argc, char* argv[]){
             runMode = 'f';
         }
     }
-
 
     if (runMode == 'x'){
         printf("EXIT DUE TO RUNMODE x");
@@ -335,11 +347,13 @@ int main(int argc, char* argv[]){
         int tape_size = 0;
         char* commands = vector_create();
         
+        disp_tape(tape, &tape_size, commands, interpreter);
+
         while (true){
             printf("Input Commands: ");
             fgets(input, 256, stdin); //max input length = 256
+            clearScreen();
             in_getCommands(&commands, input);
-            printf("Inputted Commands: %s\n", commands);
             l_runInterpreter(commands, tape, &tape_size, &interpreter);
         }
     }
