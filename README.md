@@ -10,6 +10,6 @@
  
 ### Screenshots:
 
-![As live interpreter](https://github.com/ihasdapie/brainfuckinterpreter/images/sc1.png)
+![As live interpreter](https://raw.githubusercontent.com/ihasdapie/brainfuckinterpreter/master/images/sc2.png)
 
-![With file input](https://github.com/ihasdapie/brainfuckinterpreter/images/sc2.png)
+![With file input](https://raw.githubusercontent.com/ihasdapie/brainfuckinterpreter/master/images/sc2.png)
